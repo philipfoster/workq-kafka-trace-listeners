@@ -3,7 +3,6 @@ package com.workq.tracelisteners;
 import com.workq.tracelisteners.events.EventActionType;
 import com.workq.tracelisteners.events.ProcessTraceEvent;
 import com.workq.tracelisteners.events.TraceEventType;
-import com.workq.tracelisteners.messaging.AmqMessagePublisher;
 import com.workq.tracelisteners.messaging.MessagePublisher;
 import com.workq.tracelisteners.messaging.PublishingFailedException;
 import com.workq.tracelisteners.model.Node;
@@ -27,19 +26,15 @@ import org.slf4j.LoggerFactory;
  * When an event occurs in the RHPAM process instance, such as "node triggered", this listener will pull data associated with the event and publish it
  * to an AMQ queue for future analytics purposes.
  */
+@SuppressWarnings({"DuplicatedCode", "unused"})
 public class ProcessTraceEventListener implements ProcessEventListener {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(ProcessTraceEventListener.class);
-    private MessagePublisher publisher;
+    private final MessagePublisher publisher;
     private LocalDateTime nodeStartTime;
 
-    public ProcessTraceEventListener() throws Exception {
-        publisher = new MessagePublisher() {
-            @Override
-            public void publishMessage(ProcessTraceEvent event) throws PublishingFailedException {
-                LOGGER.info("Got message {}", event);
-            }
-        }
+    public ProcessTraceEventListener() {
+        publisher = event -> LOGGER.info("Got message {}", event);
         LOGGER.info("Done initializing process trace event listener...");
     }
 

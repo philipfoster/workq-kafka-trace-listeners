@@ -16,12 +16,13 @@ public class LocalDateTimeDeserializer extends StdDeserializer<LocalDateTime> {
         super(vc);
     }
 
+    @SuppressWarnings("unused")
     public LocalDateTimeDeserializer() {
         this(LocalDateTime.class);
     }
 
     @Override
-    public LocalDateTime deserialize(JsonParser parser, DeserializationContext ctxt)
+    public LocalDateTime deserialize(JsonParser parser, DeserializationContext ctx)
         throws IOException {
         return LocalDateTime.parse(parser.readValueAs(String.class));
     }

@@ -3,6 +3,7 @@ package com.workq.tracelisteners.messaging;
 /**
  * This exception is thrown when a {@link MessagePublisher} fails to publish a message
  */
+@SuppressWarnings("unused")
 public class PublishingFailedException extends RuntimeException {
 
     public PublishingFailedException() {
