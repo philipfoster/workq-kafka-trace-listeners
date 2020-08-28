@@ -3,6 +3,7 @@ package com.workq.tracelisteners;
 import com.workq.tracelisteners.events.EventActionType;
 import com.workq.tracelisteners.events.ProcessTraceEvent;
 import com.workq.tracelisteners.events.TraceEventType;
+import com.workq.tracelisteners.messaging.KafkaPublisher;
 import com.workq.tracelisteners.messaging.MessagePublisher;
 import com.workq.tracelisteners.messaging.PublishingFailedException;
 import com.workq.tracelisteners.model.Node;
@@ -30,11 +31,10 @@ import org.slf4j.LoggerFactory;
 public class ProcessTraceEventListener implements ProcessEventListener {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(ProcessTraceEventListener.class);
-    private final MessagePublisher publisher;
+    private static final MessagePublisher publisher = new KafkaPublisher(); // TODO: Find a nicer way to do this...
     private LocalDateTime nodeStartTime;
 
     public ProcessTraceEventListener() {
-        publisher = event -> LOGGER.info("Got message {}", event);
         LOGGER.info("Done initializing process trace event listener...");
     }
 
@@ -42,6 +42,9 @@ public class ProcessTraceEventListener implements ProcessEventListener {
         LOGGER.trace("BeforeNodeTriggered: " + event.toString());
         nodeStartTime = LocalDateTime.now();
         String id = Long.toString(event.getProcessInstance().getId());
+
+        RuleFlowProcessInstance rfpi = (RuleFlowProcessInstance) event.getProcessInstance();
+
 
         ProcessTraceEvent processTraceEvent = new ProcessTraceEvent();
         processTraceEvent.setTraceEventType(TraceEventType.ProcessTraceEvent);
@@ -56,10 +59,11 @@ public class ProcessTraceEventListener implements ProcessEventListener {
 //        node.setID(Long.toString(event.getNodeInstance().getId()));
         node.setName(event.getNodeInstance().getNodeName());
 
+
         Process process = new Process();
         process.setNode(node);
         process.setName(event.getProcessInstance().getProcessName());
-//        process.setProcessVariables(rfpi.getVariables());
+        process.setProcessVariables(rfpi.getVariables());
 
         processTraceEvent.setProcess(process);
         try {
@@ -144,7 +148,7 @@ public class ProcessTraceEventListener implements ProcessEventListener {
     public void afterNodeLeft(ProcessNodeLeftEvent event) {
         LOGGER.trace("AfterNodeLeft: " + event.toString());
 
-//        RuleFlowProcessInstance rfpi = (RuleFlowProcessInstance) event.getProcessInstance();
+        RuleFlowProcessInstance rfpi = (RuleFlowProcessInstance) event.getProcessInstance();
 
         String id = Long.toString(event.getProcessInstance().getId());
 
@@ -164,7 +168,7 @@ public class ProcessTraceEventListener implements ProcessEventListener {
         Process process = new Process();
         process.setNode(node);
         process.setName(event.getProcessInstance().getProcessName());
-//        process.setProcessVariables(rfpi.getVariables());
+        process.setProcessVariables(rfpi.getVariables());
 
         processTraceEvent.setProcess(process);
         try {

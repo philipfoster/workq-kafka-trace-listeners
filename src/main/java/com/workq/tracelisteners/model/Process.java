@@ -2,15 +2,16 @@ package com.workq.tracelisteners.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import java.util.Map;
 
 /**
  * Represents a JBPM process
  */
-@JsonPropertyOrder({"Name", "Node"})
+@JsonPropertyOrder({"Name", "Node", "ProcessVariables"})
 public class Process {
 
     private String name;
-    //    private Map<String, Object> processVariables;
+    private Map<String, Object> processVariables;
     private Node node;
 
     @JsonProperty("Name")
@@ -31,14 +32,14 @@ public class Process {
         this.node = node;
     }
 
-////    @JsonProperty("ProcessVariables")
-//    public Map<String, Object> getProcessVariables() {
-//        return processVariables;
-//    }
-//
-//    public void setProcessVariables(Map<String, Object> processVariables) {
-//        this.processVariables = processVariables;
-//    }
+    @JsonProperty("ProcessVariables")
+    public Map<String, Object> getProcessVariables() {
+        return processVariables;
+    }
+
+    public void setProcessVariables(Map<String, Object> processVariables) {
+        this.processVariables = processVariables;
+    }
 
     @Override
     public String toString() {

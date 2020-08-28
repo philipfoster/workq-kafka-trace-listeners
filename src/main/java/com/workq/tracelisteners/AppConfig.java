@@ -14,49 +14,37 @@ public class AppConfig {
     private static final String KAFKA_CONFIG_KEY = "kafka.topic.name";
     private static final String KAFKA_SERVERS_KEY = "kafka.servers";
     private static final String KAFKA_CLIENT_ID = "kafka.client.id";
-    private static final String CONFIG_FILE = "config.properties";
+    private static final String CONFIG_FILE = "/config.properties";
 
-    private Properties config;
+//    private final Properties config;
 
     public AppConfig() {
 
-        LOGGER.info("Loading app config");
-        File configFile = new File(CONFIG_FILE);
-
-        config = new Properties();
-        try(InputStream istream = new FileInputStream(configFile)) {
-            config.load(istream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        LOGGER.info("Done loading app config");
+//        LOGGER.info("Loading app config");
+//
+//        config = new Properties();
+//        try(InputStream istream = getClass().getResourceAsStream(CONFIG_FILE)) {
+//            config.load(istream);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        LOGGER.info("Config = {}", config.toString());
+//        LOGGER.info("Done loading app config");
     }
 
     public String kafkaServers() {
-        String result =  config.getProperty(KAFKA_SERVERS_KEY);
-        if (result == null) {
-            throw new RuntimeException("Could not load configuration " + KAFKA_SERVERS_KEY);
-        }
-        return result;
+        return "localhost:9092";
 
     }
 
     public String kafkaTopic() {
-        String result =  config.getProperty(KAFKA_CONFIG_KEY, null);
-        if (result == null) {
-            throw new RuntimeException("Could not load configuration " + KAFKA_CONFIG_KEY);
-        }
-        return result;
-
+        return "trace-events";
     }
 
 
     public String kafkaClientId() {
-        String result =  config.getProperty(KAFKA_CLIENT_ID, null);
-        if (result == null) {
-            throw new RuntimeException("Could not load configuration " + KAFKA_CLIENT_ID);
-        }
-        return result;
+        return "pam-trace-publisher";
 
     }
 

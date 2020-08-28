@@ -26,12 +26,14 @@ public class KafkaPublisher implements MessagePublisher {
 
 
     public KafkaPublisher() {
-        producer = createProducer();
         config = new AppConfig();
         mapper = new ObjectMapper();
+        producer = createProducer();
     }
 
     private Producer<Long, String> createProducer() {
+
+        Thread.currentThread().setContextClassLoader(null);
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, config.kafkaServers());
         props.put(ProducerConfig.CLIENT_ID_CONFIG, config.kafkaClientId());
@@ -58,14 +60,19 @@ public class KafkaPublisher implements MessagePublisher {
             throw new PublishingFailedException(e);
         }
 
+        LOGGER.info("topic = {}, key = {}", config.kafkaTopic(), key);
+
         final ProducerRecord<Long, String> record = new ProducerRecord<>(config.kafkaTopic(), key, value);
         producer.send(record, ((meta, exception) -> {
             if (meta != null) {
-                LOGGER.debug("Sent record({}, {}), metadata({}, {})", key, value, meta.partition(), meta.offset());
+                LOGGER.info("Sent message");
+//                LOGGER.debug("Sent record({}, {}), metadata({}, {})", key, value, meta.partition(), meta.offset());
             } else {
                 LOGGER.error("Failed to publish message({}, {})", key, value);
                 LOGGER.error("", exception);
             }
         }));
+
+        producer.flush();
     }
 }
