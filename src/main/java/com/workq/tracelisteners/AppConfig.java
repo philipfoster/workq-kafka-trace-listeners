@@ -38,14 +38,20 @@ public class AppConfig {
 
     }
 
-    public String kafkaTopic() {
+    public String processTraceTopic() {
         return "trace-events";
     }
 
+    public String taskTraceTopic() {
+        return "trace-events";
+    }
+
+    public String slaTraceTopic() {
+        return "trace-events";
+    }
 
     public String kafkaClientId() {
         return "pam-trace-publisher";
-
     }
 
 }

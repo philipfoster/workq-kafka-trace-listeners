@@ -5,5 +5,5 @@ package com.workq.tracelisteners.events;
  */
 public enum TraceEventType {
 
-    None, ProcessTraceEvent
+    None, ProcessTraceEvent, SlaViolatedEvent, TaskTraceEvent
 }

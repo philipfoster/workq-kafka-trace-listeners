@@ -4,6 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.workq.tracelisteners.AppConfig;
 import com.workq.tracelisteners.events.ProcessTraceEvent;
+import com.workq.tracelisteners.events.SlaViolatedTraceEvent;
+import com.workq.tracelisteners.events.TaskTraceEvent;
+import com.workq.tracelisteners.events.TraceEvent;
 import java.util.Properties;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -49,7 +52,24 @@ public class KafkaPublisher implements MessagePublisher {
      */
     @Override
     public void publishMessage(ProcessTraceEvent event) throws PublishingFailedException {
+        LOGGER.info("Publishing message {}", event);
+        publishMessage(event,  config.processTraceTopic());
+    }
 
+    @Override
+    public void publishMessage(SlaViolatedTraceEvent event) throws PublishingFailedException {
+        LOGGER.info("Publishing message {}", event);
+        publishMessage(event, config.slaTraceTopic());
+    }
+
+    @Override
+    public void publishMessage(TaskTraceEvent event) throws PublishingFailedException {
+        LOGGER.info("Publishing message {}", event);
+        publishMessage(event, config.taskTraceTopic());
+    }
+
+    private void publishMessage(TraceEvent event, String topic) throws PublishingFailedException {
+        LOGGER.info("event = {}, topic = {}", event, topic);
         long key;
         String value;
         try {
@@ -60,9 +80,9 @@ public class KafkaPublisher implements MessagePublisher {
             throw new PublishingFailedException(e);
         }
 
-        LOGGER.info("topic = {}, key = {}", config.kafkaTopic(), key);
+        LOGGER.info("topic = {}, key = {}", topic, key);
 
-        final ProducerRecord<Long, String> record = new ProducerRecord<>(config.kafkaTopic(), key, value);
+        final ProducerRecord<Long, String> record = new ProducerRecord<>(topic, key, value);
         producer.send(record, ((meta, exception) -> {
             if (meta != null) {
                 LOGGER.info("Sent message");

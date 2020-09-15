@@ -19,7 +19,7 @@
     <rhba.platform.bom.version>7.7.1.redhat-00002</rhba.platform.bom.version>
     <slf4j.version>1.7.30</slf4j.version>
     <junit.version>4.13</junit.version>
-    <kie-maven-plugin.version>7.33.0.Final-redhat-00002</kie-maven-plugin.version>
+    <kie-maven-plugin.version>7.33.0.Final-redhat-00003</kie-maven-plugin.version>
     <kafka.version>2.6.0</kafka.version>
   </properties>
 
@@ -86,6 +86,12 @@
     <dependency>
       <groupId>org.kie</groupId>
       <artifactId>kie-dmn-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jbpm</groupId>
+      <artifactId>jbpm-kie-services</artifactId>
       <scope>provided</scope>
     </dependency>
 

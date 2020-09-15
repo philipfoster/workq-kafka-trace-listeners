@@ -2,6 +2,7 @@ package com.workq.tracelisteners;
 
 import com.workq.tracelisteners.events.EventActionType;
 import com.workq.tracelisteners.events.ProcessTraceEvent;
+import com.workq.tracelisteners.events.SlaViolatedTraceEvent;
 import com.workq.tracelisteners.events.TraceEventType;
 import com.workq.tracelisteners.messaging.KafkaPublisher;
 import com.workq.tracelisteners.messaging.MessagePublisher;
@@ -17,6 +18,7 @@ import org.kie.api.event.process.ProcessNodeLeftEvent;
 import org.kie.api.event.process.ProcessNodeTriggeredEvent;
 import org.kie.api.event.process.ProcessStartedEvent;
 import org.kie.api.event.process.ProcessVariableChangedEvent;
+import org.kie.api.event.process.SLAViolatedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,8 +40,31 @@ public class ProcessTraceEventListener implements ProcessEventListener {
         LOGGER.info("Done initializing process trace event listener...");
     }
 
+    /**
+     * Extract person who started a task, who assigned to, who claimed it, start and end date.
+     * Extract SLA if possible. Can PAM kick out event to notify if SLA is past due. Explore how to do this.
+     */
+    @Override
+    public void afterSLAViolated(SLAViolatedEvent event) {
+        LOGGER.info("AfterSlaViolated: {}", event);
+        SlaViolatedTraceEvent traceMessage = new SlaViolatedTraceEvent();
+        traceMessage.setTimeStamp(LocalDateTime.now());
+        traceMessage.setProcessInstanceId(String.valueOf(event.getProcessInstance().getId()));
+        traceMessage.setTraceEventType(TraceEventType.SlaViolatedEvent);
+        traceMessage.setNodeId(event.getNodeInstance().getId());
+        traceMessage.setResponsibleNodeName(event.getNodeInstance().getNodeName());
+
+        try {
+            LOGGER.info("Sending message {}", traceMessage);
+            publisher.publishMessage(traceMessage);
+        } catch (PublishingFailedException exception) {
+            LOGGER.warn("Failed to publish message", exception);
+        }
+
+    }
+
     public void beforeNodeTriggered(ProcessNodeTriggeredEvent event) {
-        LOGGER.trace("BeforeNodeTriggered: " + event.toString());
+        LOGGER.info("BeforeNodeTriggered: " + event.toString());
         nodeStartTime = LocalDateTime.now();
         String id = Long.toString(event.getProcessInstance().getId());
 
@@ -67,6 +92,7 @@ public class ProcessTraceEventListener implements ProcessEventListener {
 
         processTraceEvent.setProcess(process);
         try {
+            LOGGER.info("Sending message {}", processTraceEvent);
             publisher.publishMessage(processTraceEvent);
         } catch (PublishingFailedException e) {
             LOGGER.warn("Failed to publish message", e);
@@ -75,7 +101,7 @@ public class ProcessTraceEventListener implements ProcessEventListener {
     }
 
     public void beforeProcessStarted(ProcessStartedEvent event) {
-        LOGGER.trace("BeforeProcessStarted: " + event.toString());
+        LOGGER.info("BeforeProcessStarted: " + event.toString());
 
         RuleFlowProcessInstance rfpi = (RuleFlowProcessInstance) event.getProcessInstance();
 
@@ -93,7 +119,7 @@ public class ProcessTraceEventListener implements ProcessEventListener {
         processTraceEvent.setProcess(process);
 
         try {
-            LOGGER.debug("BeforeProcessStarted sending to queue");
+            LOGGER.info("BeforeProcessStarted sending to queue");
             publisher.publishMessage(processTraceEvent);
         } catch (PublishingFailedException e) {
             e.printStackTrace();
@@ -101,13 +127,13 @@ public class ProcessTraceEventListener implements ProcessEventListener {
     }
 
     public void afterProcessCompleted(ProcessCompletedEvent event) {
-        LOGGER.trace("AfterProcessCompleted: " + event.toString());
+        LOGGER.info("AfterProcessCompleted: " + event.toString());
         if(event.getProcessInstance().getParentProcessInstanceId() == -1 ) {
             sendProcessCompletedEvent(event);
 
             // close the publisher when everything is done
             try {
-                LOGGER.debug("Closing process listener publisher");
+                LOGGER.info("Closing process listener publisher");
             } catch (Exception e) {
                 LOGGER.warn("Failed to close publisher", e);
             }
@@ -132,7 +158,7 @@ public class ProcessTraceEventListener implements ProcessEventListener {
         processTraceEvent.setProcess(process);
 
         try {
-            LOGGER.debug("BeforeProcessStarted sending to queue");
+            LOGGER.info("BeforeProcessStarted sending to queue");
             publisher.publishMessage(processTraceEvent);
         } catch (PublishingFailedException e) {
             LOGGER.warn("Failed to publish message", e);
@@ -146,7 +172,7 @@ public class ProcessTraceEventListener implements ProcessEventListener {
     }
 
     public void afterNodeLeft(ProcessNodeLeftEvent event) {
-        LOGGER.trace("AfterNodeLeft: " + event.toString());
+        LOGGER.info("AfterNodeLeft: " + event.toString());
 
         RuleFlowProcessInstance rfpi = (RuleFlowProcessInstance) event.getProcessInstance();
 
